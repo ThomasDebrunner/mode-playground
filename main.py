@@ -4,6 +4,7 @@ import sys
 from termcolor import colored
 from modes import create_modes
 
+
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
@@ -12,8 +13,8 @@ def main_loop(vehicle):
     should_exit = False
 
     while not should_exit:
-        print(colored('User selected mode [%s], vehicle executing [%s]' %
-                      (vehicle.user_selected_mode, vehicle.executing_mode), 'blue'))
+
+        vehicle.print_mode_state()
 
         command = input('> ')
 
@@ -45,11 +46,12 @@ def main_loop(vehicle):
         elif mode_match:
             mode = mode_match.group(1)
             if mode in vehicle.modes:
-                vehicle.user_selected_mode = vehicle.modes[mode]
+                vehicle.request_mode(mode)
             else:
                 eprint('%s is not a valid mode' % mode)
         elif not command == '':
             eprint('%s is not a command' % command)
+        vehicle.simulate()
 
 
 class Vehicle:
@@ -57,18 +59,28 @@ class Vehicle:
         self.modes = create_modes()
         self.state = create_initial_state()
 
-        self.user_selected_mode = self.modes['Idle']
-        self.executing_mode = self.modes['Idle']
+        self._user_selected_mode = self.modes['Idle']
+        self._executing_mode = self.modes['Idle']
+
+    def request_mode(self, mode):
+        self._user_selected_mode = self.modes[mode]
+
+    def print_mode_state(self):
+        print(colored('User selected mode [%s], vehicle executing [%s]' %
+                      (self._user_selected_mode.name, self._executing_mode.name), 'blue'))
 
     def simulate(self):
-        pass
-
-
+        res = self._user_selected_mode.can_run(self.state)
+        if res.can_run:
+            self._executing_mode = self._user_selected_mode
+        else:
+            eprint('Can not execute %s because' % self._user_selected_mode.name)
+            for reason in res.reasons:
+                eprint('- ' + reason)
 
 def main():
     vehicle = Vehicle()
     main_loop(vehicle)
-
 
 
 if __name__ == '__main__':

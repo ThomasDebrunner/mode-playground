@@ -41,7 +41,8 @@ class StateGroup:
         raise IndexError('State %s does not exist' % query)
 
     def set(self, value):
-        raise IndexError('State %s is a group, can not set directly' % self.name)
+        for c in self.children:
+            c.set(value)
 
     def ok(self):
         for c in self.children:
@@ -91,10 +92,16 @@ def create_initial_state():
             ])
         ]),
         StateGroup('Estimator', [
-
+            StateGroup('GlobalPosition', [
+                StateItem('X'),
+                StateItem('Y'),
+                StateItem('Z')
+            ])
         ]),
         StateGroup('System', [
-            StateItem('Armed')
+            StateItem('Armed'),
+            StateItem('Datalink'),
+            StateItem('ManualControl')
         ])
     ])
     return state
