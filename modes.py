@@ -32,6 +32,7 @@ class Mode:
 
 class Idle(Mode):
     name = 'Idle'
+    failsafe_stack = 'Idle'
 
     def can_run(self, state):
         return expect_fail(state, 'System/Armed')
@@ -39,6 +40,7 @@ class Idle(Mode):
 
 class Takeoff(Mode):
     name = 'Takeoff'
+    failsafe_stack = 'Land'
 
     def can_run(self, state):
         return expect_ok(state, 'Hardware') & \
@@ -48,6 +50,7 @@ class Takeoff(Mode):
 
 class Loiter(Mode):
     name = 'Loiter'
+    failsafe_stack = 'Return'
 
     def can_run(self, state):
         return expect_ok(state, 'Hardware') & \
@@ -57,6 +60,7 @@ class Loiter(Mode):
 
 class GoTo(Mode):
     name = 'Goto'
+    failsafe_stack = 'Return'
 
     def can_run(self, state):
         return expect_ok(state, 'Hardware') & \
@@ -66,6 +70,7 @@ class GoTo(Mode):
 
 class RTL(Mode):
     name = 'RTL'
+    failsafe_stack = 'Return'
 
     def can_run(self, state):
         return expect_ok(state, 'Hardware') & \
@@ -75,6 +80,7 @@ class RTL(Mode):
 
 class PositionControlled(Mode):
     name = 'PositionControl'
+    failsafe_stack = 'Manual'
 
     def can_run(self, state):
         return expect_ok(state, 'Hardware') & \
@@ -85,6 +91,7 @@ class PositionControlled(Mode):
 
 class AltitudeControlled(Mode):
     name = 'AltitudeControl'
+    failsafe_stack = 'Manual'
 
     def can_run(self, state):
         return expect_ok(state, 'Hardware') & \

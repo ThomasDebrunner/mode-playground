@@ -3,6 +3,7 @@ import re
 import sys
 from termcolor import colored
 from modes import create_modes
+from stacks import create_stacks
 
 
 def eprint(*args, **kwargs):
@@ -28,6 +29,12 @@ def main_loop(vehicle):
             print('Available modes:')
             for mode in vehicle.modes:
                 print('- ' + mode)
+        elif command == 'stacks':
+            print('Available stacks:')
+            for name, stack in vehicle.stacks.items():
+                print('> ' + colored(name, attrs=['bold']))
+                for mode in stack:
+                    print('  - ' + mode)
         elif command == 'q' or command == 'exit':
             should_exit = True
         elif state_match:
@@ -58,6 +65,7 @@ class Vehicle:
     def __init__(self):
         self.modes = create_modes()
         self.state = create_initial_state()
+        self.stacks = create_stacks()
 
         self._user_selected_mode = self.modes['Idle']
         self._executing_mode = self.modes['Idle']
@@ -77,6 +85,7 @@ class Vehicle:
             eprint('Can not execute %s because' % self._user_selected_mode.name)
             for reason in res.reasons:
                 eprint('- ' + reason)
+
 
 def main():
     vehicle = Vehicle()
