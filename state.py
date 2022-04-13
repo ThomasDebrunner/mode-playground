@@ -1,5 +1,4 @@
-from termcolor import colored
-
+from colors import red, green
 
 class StateItem:
     def __init__(self, name):
@@ -13,7 +12,7 @@ class StateItem:
         self.value = value
 
     def print(self, level=0):
-        state_str = colored('OK', 'green') if self.ok() else colored('Fail', 'red')
+        state_str = green('OK') if self.ok() else red('Fail')
         print((' ' * level) + self.name + (' ' * (20-level-len(self.name))) + state_str)
 
     def __getitem__(self, query):
@@ -51,7 +50,7 @@ class StateGroup:
         return True
 
     def print(self, level=0):
-        state_str = colored('OK', 'green') if self.ok() else colored('Fail', 'red')
+        state_str = green('OK') if self.ok() else red('Fail')
         print((' ' * level) + self.name + (' ' * (20-level-len(self.name))) + state_str)
         for c in self.children:
             c.print(level+1)

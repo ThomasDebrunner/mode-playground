@@ -1,0 +1,47 @@
+<html>
+<head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/brython/3.10.5/brython.min.js">
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/brython/3.10.5/brython_stdlib.min.js">
+</script>
+</head>
+<body onload="brython()">
+
+    <textarea id="console"></textarea>
+    <script type="text/python3">
+        import sys
+        from browser import document
+
+        class MyOutput:
+            def __init__(self):
+                self.console = document["console"]
+
+            def write(self, text):
+                self.console.text += text
+
+        sys.stdout = MyOutput()
+
+        print("Hello World 1")
+
+        print("Hello World 2")
+
+    </script>
+
+    <script type="text/python">
+        from browser import document, window
+        from main import Vehicle
+
+        vehicle = Vehicle()
+
+        def py_call(arg):
+            if arg == 'modes':
+                for mode in vehicle.modes:
+                    print(mode)
+            return 'Return value'
+
+        window.py_call = py_call
+    </script>
+
+
+</body>
+</html>
