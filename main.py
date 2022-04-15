@@ -47,7 +47,7 @@ def apply_command(vehicle, command):
         query = set_match.group(1)
         value = False if set_match.group(2) == 'fail' else True
         try:
-            vehicle.state[query].set(value)
+            vehicle.set_state(query, value)
         except IndexError as err:
             eprint(str(err))
     elif mode_match:
@@ -73,6 +73,9 @@ class Vehicle:
 
         self._sim_time = 0
 
+    def set_state(self, query, value):
+        self.state[query].set(value, self._sim_time)
+
     def request_mode(self, mode):
         self._user_selected_mode = self.modes[mode]
 
@@ -82,14 +85,15 @@ class Vehicle:
 
     def simulate(self):
         self._sim_time += 1
-
-        res = self._user_selected_mode.can_run(self.state)
+        
+        res = self._user_selected_mode.can_run(self.state, self._sim_time)
         if res.can_run:
             self._executing_mode = self._user_selected_mode
         else:
             eprint('Can not execute %s because' % self._user_selected_mode.name)
-            for reason in res.reasons:
-                eprint('- ' + reason)
+
+        for reason in res.reasons:
+            eprint('- ' + reason)
 
 
 def main():

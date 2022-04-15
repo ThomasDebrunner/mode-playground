@@ -1,15 +1,22 @@
 from colors import red, green
 
+
 class StateItem:
     def __init__(self, name, initial_value):
         self.name = name
-        self.value = initial_value
+        self._value = initial_value
+        self._toggle_time = 0
 
     def ok(self):
-        return self.value
+        return self._value
 
-    def set(self, value):
-        self.value = value
+    def toggle_time(self):
+        return self._toggle_time
+
+    def set(self, value, time):
+        if value != self._value:
+            self._value = value
+            self._toggle_time = time
 
     def print(self, level=0):
         state_str = green('true (OK)') if self.ok() else red('false (Fail)')
@@ -22,7 +29,7 @@ class StateItem:
 class StateGroup:
     def __init__(self, name, children=None):
         self.name = name
-        self.children = children if children is not None else []
+        self._children = children if children is not None else []
 
     def __getitem__(self, query):
         next_item = query
@@ -31,7 +38,7 @@ class StateGroup:
             split = query.split('/')
             next_item = split[0]
             remaining_query = '/'.join(split[1:])
-        for c in self.children:
+        for c in self._children:
             if c.name == next_item:
                 if remaining_query == '':
                     return c
@@ -39,20 +46,26 @@ class StateGroup:
                     return c[remaining_query]
         raise IndexError('State %s does not exist' % query)
 
-    def set(self, value):
-        for c in self.children:
-            c.set(value)
+    def set(self, value, time):
+        for c in self._children:
+            c.set(value, time)
 
     def ok(self):
-        for c in self.children:
+        for c in self._children:
             if not c.ok():
                 return False
         return True
 
+    def toggle_time(self):
+        if self.ok():
+            return max(c.toggle_time() for c in self._children)
+        else:
+            return min(c.toggle_time() for c in self._children)
+
     def print(self, level=0):
         state_str = green('true (OK)') if self.ok() else red('false (Fail)')
         print((' ' * level) + self.name + (' ' * (20-level-len(self.name))) + state_str)
-        for c in self.children:
+        for c in self._children:
             c.print(level+1)
 
 STATE = {

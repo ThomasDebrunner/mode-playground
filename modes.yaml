@@ -21,6 +21,7 @@ Takeoff:
         System/Battery:
             expect: true
             fail_stack: Land
+            hysteresis: 10
 
 Loiter:
     can_run:

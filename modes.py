@@ -18,12 +18,18 @@ class Condition:
         self._hysteresis = hysteresis
         self._overridable = overridable
 
-    def eval(self, state):
+    def eval(self, state, time):
         state_val = state[self._query].ok()
         if state_val == self._expect:
             return CanRunResult(True, [])
         else:
-            return CanRunResult(False, ['%s is in %s state' % (self._query, 'OK' if state_val else 'Fail')])
+            time_since_toggle = time - state[self._query].toggle_time()
+            if time_since_toggle < self._hysteresis:
+                return CanRunResult(True, ['%s is in %s state since %d ago. Fail safe in %d' %
+                                           (self._query, 'OK' if state_val else 'Fail', time_since_toggle,
+                                            self._hysteresis - time_since_toggle)])
+            else:
+                return CanRunResult(False, ['%s is in %s state' % (self._query, 'OK' if state_val else 'Fail')])
 
 
 class Mode:
@@ -31,10 +37,10 @@ class Mode:
         self.name = name
         self._can_run_conditions = can_run_conditions
 
-    def can_run(self, state):
+    def can_run(self, state, time):
         res = CanRunResult(True, [])
         for condition in self._can_run_conditions:
-            res = res & condition.eval(state)
+            res = res & condition.eval(state, time)
         return res
 
 
