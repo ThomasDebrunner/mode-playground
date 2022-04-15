@@ -33,3 +33,6 @@ State:
         Armed: false
         Datalink: true
         ManualControl: true
+        Battery:
+            AboveLow: true
+            AboveCritical: true

@@ -11,13 +11,16 @@ class CanRunResult:
 
 
 class Condition:
-    def __init__(self, query, value):
+    def __init__(self, query, expect, fail_stack, hysteresis, overridable):
         self._query = query
-        self._value = value
+        self._expect = expect
+        self._fail_stack = fail_stack
+        self._hysteresis = hysteresis
+        self._overridable = overridable
 
     def eval(self, state):
         state_val = state[self._query].ok()
-        if state_val == self._value:
+        if state_val == self._expect:
             return CanRunResult(True, [])
         else:
             return CanRunResult(False, ['%s is in %s state' % (self._query, 'OK' if state_val else 'Fail')])
@@ -38,7 +41,13 @@ class Mode:
 def modes_from_dict(mode_dict):
     modes = {}
     for name, conf in mode_dict.items():
-        can_run_conditions = [Condition(q, v) for q, v in conf['can_run'].items()]
+        can_run_conditions = []
+        for query, condition_dict in conf['can_run'].items():
+            expect = condition_dict['expect']
+            fail_stack = condition_dict['fail_stack']
+            hysteresis = condition_dict['hysteresis'] if 'hysteresis' in condition_dict else 0
+            overridable = condition_dict['overridable'] if 'overridable' in condition_dict else False
+            can_run_conditions.append(Condition(query, expect, fail_stack, hysteresis, overridable))
         modes[name] = Mode(name, can_run_conditions)
 
     return modes

@@ -56,9 +56,10 @@ def apply_command(vehicle, command):
             vehicle.request_mode(mode)
         else:
             eprint('%s is not a valid mode' % mode)
+    elif command == 's':
+        vehicle.simulate()
     elif not command == '':
         eprint('%s is not a command' % command)
-    vehicle.simulate()
 
 
 class Vehicle:
@@ -70,14 +71,18 @@ class Vehicle:
         self._user_selected_mode = self.modes['Idle']
         self._executing_mode = self.modes['Idle']
 
+        self._sim_time = 0
+
     def request_mode(self, mode):
         self._user_selected_mode = self.modes[mode]
 
     def print_mode_state(self):
-        print(blue('User selected mode [%s], vehicle executing [%s]' %
-                      (self._user_selected_mode.name, self._executing_mode.name)))
+        print(blue('Sim time: %d, user selected mode [%s], vehicle executing [%s]' %
+                      (self._sim_time, self._user_selected_mode.name, self._executing_mode.name)))
 
     def simulate(self):
+        self._sim_time += 1
+
         res = self._user_selected_mode.can_run(self.state)
         if res.can_run:
             self._executing_mode = self._user_selected_mode
