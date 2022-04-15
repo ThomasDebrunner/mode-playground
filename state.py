@@ -92,4 +92,4 @@ def _state_from_dict(state_dict):
 
 
 def state_from_dict(state_dict):
-    return _state_from_dict(state_dict)[0]
+    return StateGroup('State', _state_from_dict(state_dict))

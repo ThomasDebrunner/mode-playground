@@ -85,7 +85,7 @@ class Vehicle:
 
     def simulate(self):
         self._sim_time += 1
-        
+
         res = self._user_selected_mode.can_run(self.state, self._sim_time)
         if res.can_run:
             self._executing_mode = self._user_selected_mode
@@ -99,14 +99,12 @@ class Vehicle:
 def main():
     import yaml
 
-    with open('modes.yaml', 'r') as f:
-        modes = modes_from_dict(yaml.safe_load(f))
+    with open('setup.yaml', 'r') as f:
+        y = yaml.safe_load(f)
 
-    with open('state.yaml', 'r') as f:
-        state = state_from_dict(yaml.safe_load(f))
-
-    with open('stacks.yaml', 'r') as f:
-        stacks = yaml.safe_load(f)
+    modes = modes_from_dict(y['Modes'])
+    state = state_from_dict(y['State'])
+    stacks = y['Stacks']
 
     vehicle = Vehicle(modes, state, stacks)
     main_loop(vehicle)

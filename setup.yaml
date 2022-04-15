@@ -1,0 +1,153 @@
+Modes:
+    Idle:
+        can_run:
+            System/Armed:
+                expect: false
+                fail_stack: Idle
+
+    Takeoff:
+        sim_duration: 10
+        next: Loiter
+
+        can_run:
+            Hardware:
+                expect: true
+                fail_stack: RTL
+            Estimator/GlobalPosition:
+                expect: true
+                fail_stack: Land
+            System/Armed:
+                expect: true
+                fail_stack: Terminate
+            System/Battery:
+                expect: true
+                fail_stack: Land
+                hysteresis: 10
+
+    Loiter:
+        can_run:
+            Hardware:
+                expect: true
+                fail_stack: RTL
+            Estimator/GlobalPosition:
+                expect: true
+                fail_stack: Land
+            System/Armed:
+                expect: true
+                fail_stack: Terminate
+            System/Battery:
+                expect: true
+                fail_stack: RTL
+                hysteresis: 5
+
+    RTL:
+        sim_duration: 10
+        can_run:
+            Hardware:
+                expect: true
+                fail_stack: RTL
+            Estimator/GlobalPosition:
+                expect: true
+                fail_stack: Land
+            System/Armed:
+                expect: true
+                fail_stack: Terminate
+
+    PositionControl:
+        can_run:
+            Hardware:
+                expect: true
+                fail_stack: RTL
+            Estimator/GlobalPosition:
+                expect: true
+                fail_stack: Manual
+            System/Armed:
+                expect: true
+                fail_stack: Terminate
+            System/ManualControl:
+                expect: true
+                fail_stack: RTL
+                hysteresis: 10
+            System/Battery:
+                expect: true
+                fail_stack: RTL
+                hysteresis: 5
+                overridable: true
+
+    AltitudeControlled:
+        can_run:
+            Hardware:
+                expect: true
+                fail_stack: RTL
+            Estimator/GlobalPosition/Z:
+                expect: true
+                fail_stack: Manual
+            System/Armed:
+                expect: true
+                fail_stack: Terminate
+            System/ManualControl:
+                expect: true
+                fail_stack: RTL
+                hysteresis: 10
+            System/Battery:
+                expect: true
+                fail_stack: RTL
+                hysteresis: 5
+                overridable: true
+
+
+State:
+    Hardware:
+        Sensors:
+            Gyro:
+                Gyro0:
+                    Healthy: true
+                    Calibrated: true
+                Gyro1:
+                    Healthy: true
+                    Calibrated: true
+                Gyro2:
+                    Healthy: true
+                    Calibrated: true
+
+            Accelerometer:
+                Accelerometer0:
+                    Healthy: true
+                    Calibrated: true
+                Accelerometer1:
+                    Healthy: true
+                    Calibrated: true
+                Accelerometer2:
+                    Healthy: true
+                    Calibrated: true
+
+    Estimator:
+        GlobalPosition:
+            X: true
+            Y: true
+            Z: true
+
+    System:
+        Armed: false
+        Datalink: true
+        ManualControl: true
+        Battery:
+            AboveLow: true
+            AboveCritical: true
+
+Stacks:
+    Idle:
+        - Idle
+
+    Return:
+        - RTL
+        - Land
+        - FixedRateDescend
+        - Parachute
+        - Terminate
+
+    Manual:
+        - PositionControlled
+        - AltitudeControlled
+        - Stabilized
+
