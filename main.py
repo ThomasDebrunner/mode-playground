@@ -1,8 +1,7 @@
-from state import create_initial_state
+from state import state_from_dict
 import re
 import sys
-from modes import create_modes
-from stacks import create_stacks
+from modes import modes_from_dict
 from colors import bold, blue
 
 
@@ -63,10 +62,10 @@ def apply_command(vehicle, command):
 
 
 class Vehicle:
-    def __init__(self):
-        self.modes = create_modes()
-        self.state = create_initial_state()
-        self.stacks = create_stacks()
+    def __init__(self, modes, initial_state, stacks):
+        self.modes = modes
+        self.state = initial_state
+        self.stacks = stacks
 
         self._user_selected_mode = self.modes['Idle']
         self._executing_mode = self.modes['Idle']
@@ -89,7 +88,18 @@ class Vehicle:
 
 
 def main():
-    vehicle = Vehicle()
+    import yaml
+
+    with open('modes.yaml', 'r') as f:
+        modes = modes_from_dict(yaml.safe_load(f))
+
+    with open('state.yaml', 'r') as f:
+        state = state_from_dict(yaml.safe_load(f))
+
+    with open('stacks.yaml', 'r') as f:
+        stacks = yaml.safe_load(f)
+
+    vehicle = Vehicle(modes, state, stacks)
     main_loop(vehicle)
 
 

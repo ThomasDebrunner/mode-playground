@@ -1,0 +1,35 @@
+Idle:
+    can_run:
+        System/Armed: false
+
+Takeoff:
+    can_run:
+        Hardware: true
+        Estimator/GlobalPosition: true
+        System/Armed: true
+
+Loiter:
+    can_run:
+        Hardware: true
+        Estimator/GlobalPosition: true
+        System/Armed: true
+
+RTL:
+    can_run:
+        Hardware: true
+        Estimator/GlobalPosition: true
+        System/Armed: true
+
+PositionControl:
+    can_run:
+        Hardware: true
+        Estimator/GlobalPosition: true
+        System/Armed: true
+        System/ManualControl: true
+
+ManualControl:
+    can_run:
+        Hardware: true
+        Estimator/GlobalPosition/Z: true
+        System/Armed: true
+        System/ManualControl: true

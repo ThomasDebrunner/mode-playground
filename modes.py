@@ -10,104 +10,35 @@ class CanRunResult:
         return CanRunResult(self.can_run or other.can_run, [] if (self.can_run or other.can_run) else self.reasons + other.reasons)
 
 
-def _expect(state, query, value):
-    state_val = state[query].ok()
-    if state_val == value:
-        return CanRunResult(True, [])
-    else:
-        return CanRunResult(False, ['%s is in %s state' % (query, 'OK' if state_val else 'Fail')])
+class Condition:
+    def __init__(self, query, value):
+        self._query = query
+        self._value = value
 
-
-def expect_ok(state, query):
-    return _expect(state, query, True)
-
-
-def expect_fail(state, query):
-    return _expect(state, query, False)
+    def eval(self, state):
+        state_val = state[self._query].ok()
+        if state_val == self._value:
+            return CanRunResult(True, [])
+        else:
+            return CanRunResult(False, ['%s is in %s state' % (self._query, 'OK' if state_val else 'Fail')])
 
 
 class Mode:
-    pass
-
-
-class Idle(Mode):
-    name = 'Idle'
-    failsafe_stack = 'Idle'
+    def __init__(self, name, can_run_conditions):
+        self.name = name
+        self._can_run_conditions = can_run_conditions
 
     def can_run(self, state):
-        return expect_fail(state, 'System/Armed')
+        res = CanRunResult(True, [])
+        for condition in self._can_run_conditions:
+            res = res & condition.eval(state)
+        return res
 
 
-class Takeoff(Mode):
-    name = 'Takeoff'
-    failsafe_stack = 'Land'
+def modes_from_dict(mode_dict):
+    modes = {}
+    for name, conf in mode_dict.items():
+        can_run_conditions = [Condition(q, v) for q, v in conf['can_run'].items()]
+        modes[name] = Mode(name, can_run_conditions)
 
-    def can_run(self, state):
-        return expect_ok(state, 'Hardware') & \
-               expect_ok(state, 'Estimator/GlobalPosition') & \
-               expect_ok(state, 'System/Armed')
-
-
-class Loiter(Mode):
-    name = 'Loiter'
-    failsafe_stack = 'Return'
-
-    def can_run(self, state):
-        return expect_ok(state, 'Hardware') & \
-               expect_ok(state, 'Estimator/GlobalPosition') & \
-               expect_ok(state, 'System/Armed')
-
-
-class GoTo(Mode):
-    name = 'Goto'
-    failsafe_stack = 'Return'
-
-    def can_run(self, state):
-        return expect_ok(state, 'Hardware') & \
-               expect_ok(state, 'Estimator/GlobalPosition') & \
-               expect_ok(state, 'System/Armed')
-
-
-class RTL(Mode):
-    name = 'RTL'
-    failsafe_stack = 'Return'
-
-    def can_run(self, state):
-        return expect_ok(state, 'Hardware') & \
-               expect_ok(state, 'Estimator/GlobalPosition') & \
-               expect_ok(state, 'System/Armed')
-
-
-class PositionControlled(Mode):
-    name = 'PositionControl'
-    failsafe_stack = 'Manual'
-
-    def can_run(self, state):
-        return expect_ok(state, 'Hardware') & \
-               expect_ok(state, 'Estimator/GlobalPosition') & \
-               expect_ok(state, 'System/Armed') & \
-               expect_ok(state, 'System/ManualControl')
-
-
-class AltitudeControlled(Mode):
-    name = 'AltitudeControl'
-    failsafe_stack = 'Manual'
-
-    def can_run(self, state):
-        return expect_ok(state, 'Hardware') & \
-               expect_ok(state, 'Estimator/GlobalPosition/Z') & \
-               expect_ok(state, 'System/Armed') & \
-               expect_ok(state, 'System/ManualControl')
-
-
-def create_modes():
-    modes = [
-        Idle(),
-        Takeoff(),
-        Loiter(),
-        GoTo(),
-        RTL(),
-        PositionControlled(),
-        AltitudeControlled()
-    ]
-    return {m.name: m for m in modes}
+    return modes

@@ -1,9 +1,9 @@
 from colors import red, green
 
 class StateItem:
-    def __init__(self, name):
+    def __init__(self, name, initial_value):
         self.name = name
-        self.value = False
+        self.value = initial_value
 
     def ok(self):
         return self.value
@@ -12,7 +12,7 @@ class StateItem:
         self.value = value
 
     def print(self, level=0):
-        state_str = green('OK') if self.ok() else red('Fail')
+        state_str = green('true (OK)') if self.ok() else red('false (Fail)')
         print((' ' * level) + self.name + (' ' * (20-level-len(self.name))) + state_str)
 
     def __getitem__(self, query):
@@ -50,57 +50,33 @@ class StateGroup:
         return True
 
     def print(self, level=0):
-        state_str = green('OK') if self.ok() else red('Fail')
+        state_str = green('true (OK)') if self.ok() else red('false (Fail)')
         print((' ' * level) + self.name + (' ' * (20-level-len(self.name))) + state_str)
         for c in self.children:
             c.print(level+1)
 
+STATE = {
+    'State': {
+        'Hardware': {
+            'Sensors': {
+                'Gyro': {
+                    'Healthy': True
+                }
+            }
+        }
+    }
+}
 
-def create_initial_state():
-    state = StateGroup('State', [
-        StateGroup('Hardware', [
-            StateGroup('Sensors', [
-                StateGroup('Gyro', [
-                    StateGroup('Gyro0', [
-                        StateItem('Healthy'),
-                        StateItem('Calibrated')
-                    ]),
-                    StateGroup('Gyro1', [
-                        StateItem('Healthy'),
-                        StateItem('Calibrated')
-                    ]),
-                    StateGroup('Gyro2', [
-                        StateItem('Healthy'),
-                        StateItem('Calibrated')
-                    ])
-                ]),
-                StateGroup('Accelerometer', [
-                    StateGroup('Accelerometer0', [
-                        StateItem('Healthy'),
-                        StateItem('Calibrated')
-                    ]),
-                    StateGroup('Accelerometer1', [
-                        StateItem('Healthy'),
-                        StateItem('Calibrated')
-                    ]),
-                    StateGroup('Accelerometer2', [
-                        StateItem('Healthy'),
-                        StateItem('Calibrated')
-                    ]),
-                ])
-            ])
-        ]),
-        StateGroup('Estimator', [
-            StateGroup('GlobalPosition', [
-                StateItem('X'),
-                StateItem('Y'),
-                StateItem('Z')
-            ])
-        ]),
-        StateGroup('System', [
-            StateItem('Armed'),
-            StateItem('Datalink'),
-            StateItem('ManualControl')
-        ])
-    ])
-    return state
+
+def _state_from_dict(state_dict):
+    res = []
+    for k, v in state_dict.items():
+        if type(v) is dict:
+            res.append(StateGroup(k,  _state_from_dict(v)))
+        else:
+            res.append(StateItem(k, v))
+    return res
+
+
+def state_from_dict(state_dict):
+    return _state_from_dict(state_dict)[0]
