@@ -24,6 +24,29 @@ Modes:
                 fail_stack: Land
                 hysteresis: 10
 
+        can_enter:
+            System/Battery:
+                expect: true
+
+    Land:
+        sim_duration: 10
+        next: Idle
+
+        can_run:
+            Hardware:
+                expect: true
+                fail_stack: Land
+            Estimator/GlobalPosition/Z:
+                expect: true
+                fail_stack: Land
+            System/Armed:
+                expect: true
+                fail_stack: Terminate
+
+        can_enter:
+            System/Battery:
+                expect: true
+
     Loiter:
         can_run:
             Hardware:
@@ -150,4 +173,10 @@ Stacks:
         - PositionControlled
         - AltitudeControlled
         - Stabilized
+
+    Land:
+        - Land
+        - FixedRateDescend
+        - Parachute
+        - Terminate
 
