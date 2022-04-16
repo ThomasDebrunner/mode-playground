@@ -1,4 +1,4 @@
-from colors import red, green
+from mode_sim.colors import red, green
 
 
 class StateItem:

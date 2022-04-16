@@ -55,6 +55,7 @@ class Mode:
             res = res & condition.eval(state, time)
         return res
 
+
 def modes_from_dict(mode_dict):
     modes = {}
     for name, conf in mode_dict.items():

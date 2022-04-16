@@ -1,9 +1,7 @@
 <html>
 <head>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/brython/3.10.5/brython.min.js">
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/brython/3.10.5/brython_stdlib.min.js">
-</script>
+<script type="text/javascript" src="brython.js"></script>
+<script type="text/javascript" src="brython_stdlib.js"></script>
 </head>
 <body onload="brython()">
 
@@ -29,7 +27,10 @@
 
     <script type="text/python">
         from browser import document, window
-        from mode_sim.main import Vehicle
+        from mode_sim.main import Vehicle, apply_command
+        from mode_sim.modes import modes_from_dict
+        from mode_sim.state import state_from_dict
+
         import yaml
 
         with open('../setup.yaml', 'r') as f:
@@ -41,10 +42,15 @@
 
         vehicle = Vehicle(modes, state, stacks)
 
-        def py_call(arg):
-            vehicle.__dump_json()
+        def py_apply_command(arg):
+            print(arg)
+            return apply_command(vehicle, arg)
 
-        window.py_call = py_call
+        def py_dump_vehicle():
+            return vehicle._dump_json()
+
+        window.py_apply_command = py_apply_command
+        window.py_dump_vehicle = py_dump_vehicle
     </script>
 
 

@@ -1,8 +1,8 @@
-from state import state_from_dict
 import re
-import sys
-from modes import modes_from_dict
-from colors import bold, blue, red, yellow
+from mode_sim.modes import modes_from_dict
+from mode_sim.state import state_from_dict
+
+from mode_sim.colors import bold, blue, red, yellow
 import json
 
 def eprint(content):
@@ -71,7 +71,7 @@ class Vehicle:
         self._mode_request_reported = True
 
     def _dump_json(self):
-        return json.dumps(self)
+        return json.dumps(self, default=vars)
 
     def set_state(self, query, value):
         try:
