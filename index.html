@@ -1,37 +1,43 @@
 <html>
 <head>
-<script type="text/javascript" src="brython.js"></script>
-<script type="text/javascript" src="brython_stdlib.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <script type="text/javascript" src="brython.js"></script>
+    <script type="text/javascript" src="brython_stdlib.js"></script>
+    <script type="text/javascript" src="ansi_up.js"></script>
+
 </head>
 <body onload="brython()">
-
-    <textarea id="console"></textarea>
-    <script type="text/python3">
-        import sys
-        from browser import document
-
-        class MyOutput:
-            def __init__(self):
-                self.console = document["console"]
-
-            def write(self, text):
-                self.console.text += text
-
-        sys.stdout = MyOutput()
-
-        print("Hello World 1")
-
-        print("Hello World 2")
-
-    </script>
+    <div class="main-wrapper">
+        <h1>PX4 mode playground</h1>
+        <div class="console-row">
+            <div class="console">
+                <div id="console-out"></div>
+                <input type="text" id="console-in" placeholder=">> Command"/>
+            </div>
+        </div>
+        <div class='mode-sim-row'>
+            <div class='modes'>
+                <h3>User mode selection</h3>
+                <div id='mode-target'></div>
+            </div>
+        </div>
+    </div>
 
     <script type="text/python">
         from browser import document, window
         from mode_sim.main import Vehicle, apply_command
         from mode_sim.modes import modes_from_dict
         from mode_sim.state import state_from_dict
-
         import yaml
+        import sys
+
+        class MyOutput:
+
+            def write(self, text):
+                window.py_log_receiver(text)
+
+        sys.stdout = MyOutput()
+
 
         with open('../setup.yaml', 'r') as f:
             y = yaml.safe_load(f)
@@ -51,6 +57,53 @@
 
         window.py_apply_command = py_apply_command
         window.py_dump_vehicle = py_dump_vehicle
+
+        py_apply_command('nop')
+    </script>
+
+
+    <script type="text/javascript">
+        let py_initialized = false
+        function onPythonReady() {
+            {   
+                const full_state = JSON.parse(window.py_dump_vehicle())
+                
+                // add mode buttons
+                const modes = full_state['_modes'];
+                const mode_target = document.getElementById('mode-target')
+                console.log(modes)
+                Object.keys(modes).forEach(m => {
+                    const btn = document.createElement('button')
+                    btn.innerHTML = m
+                    btn.onclick = e => {window.py_apply_command('mode ' + m)}
+                    mode_target.appendChild(btn)
+                })
+            }
+        }
+
+
+        // --- console ---
+        const console_in = document.getElementById("console-in")
+        const console_out = document.getElementById("console-out")
+        console_in.onkeydown = function(event) {
+            if(event.key === 'Enter') {
+                window.py_apply_command(console_in.value)
+                console_in.value = ''
+            }
+        }
+
+        const ansi_up = new AnsiUp;
+        window.py_log_receiver = function(text) {
+            if (text.trim().length > 0) {
+                const html = '<br/>' + ansi_up.ansi_to_html(text)
+                console_out.insertAdjacentHTML("beforeend", html)
+                console_out.scrollTop = console_out.scrollHeight;
+                if (!py_initialized) {
+                    py_initialized = true
+                    setTimeout(onPythonReady, 0)
+                }
+            }
+        }
     </script>
 
 

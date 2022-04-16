@@ -2,7 +2,7 @@ import re
 from mode_sim.modes import modes_from_dict
 from mode_sim.state import state_from_dict
 
-from mode_sim.colors import bold, blue, red, yellow
+from mode_sim.colors import bold, cyan, red, yellow
 import json
 
 def eprint(content):
@@ -17,7 +17,6 @@ def main_loop(vehicle):
     should_exit = False
 
     while not should_exit:
-        vehicle.print_mode_state()
         command = input('> ')
         if command == 'q' or command == 'exit':
             break
@@ -25,9 +24,9 @@ def main_loop(vehicle):
 
 
 def apply_command(vehicle, command):
-    state_match = re.search('^state (.*)$', command)
-    set_match = re.search('^set (.*) (ok|fail|true|false)$', command)
-    mode_match = re.search('^mode (.*)$', command)
+    mode_match = re.search('^mode (.*)', command)
+    state_match = re.search('^state (.*)', command)
+    set_match = re.search('^set (.*) (ok|fail|true|false)', command)
 
     if command == 'state':
         vehicle.print_state()
@@ -53,8 +52,11 @@ def apply_command(vehicle, command):
 
     elif command == 's':
         vehicle.simulate()
+    elif command == 'nop':
+        pass
     elif not command == '':
         eprint('%s is not a command' % command)
+    vehicle.print_mode_state()
 
 
 class Vehicle:
@@ -108,7 +110,7 @@ class Vehicle:
             eprint('%s is not a valid mode' % mode)
 
     def print_mode_state(self):
-        print(bold(blue('Sim time: %d, user selected mode [%s], vehicle executing [%s]' %
+        print(bold(cyan('Sim time: %d, user selected mode [%s], vehicle executing [%s]' %
                       (self._sim_time, self._user_selected_mode.name, self._executing_mode.name))))
         if self._fail_safe_stack:
             print(bold(red('Fail safe stack active: %s' % self._fail_safe_stack)))
@@ -123,7 +125,7 @@ class Vehicle:
 
             if not res.can_run:
                 if not self._mode_request_reported:
-                    eprint('Can not switch to mode %s. Will switch as soon as condition allows' % self._user_selected_mode.name)
+                    eprint('Can not switch to mode %s. Will switch as soon as conditions allow' % self._user_selected_mode.name)
                     eprint('Reasons:')
                     for reason in res.reasons:
                         eprint(' - ' + reason)

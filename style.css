@@ -1,0 +1,40 @@
+body {
+    font-family: Helvetica, Geneva, Tahoma, sans-serif;
+    background: #222222;
+    color: #FFFFFF;
+}
+
+.console-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.console {
+    width: 70%;
+    display: block;
+}
+
+#console-out {
+    width: 100%;
+    height: 60vh;
+    resize: none;
+    background: #020202;
+    border: none;
+    font-size: 16px;
+    color: #ffffff;
+    font-family: consolas, monospace;
+    overflow: scroll;
+}
+
+#console-in {
+    width: 100%;
+    background: #343434;
+    color: #FFFFFF;
+    font-size: 16px;
+    border: none;
+    font-family: consolas, monospace;
+}
+
+textarea:focus, input:focus{
+    outline: 0;
+}
