@@ -29,10 +29,10 @@
 
     <script type="text/python">
         from browser import document, window
-        from main import Vehicle
+        from mode_sim.main import Vehicle
         import yaml
 
-        with open('setup.yaml', 'r') as f:
+        with open('../setup.yaml', 'r') as f:
             y = yaml.safe_load(f)
 
         modes = modes_from_dict(y['Modes'])

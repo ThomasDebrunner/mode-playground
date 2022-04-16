@@ -161,7 +161,7 @@ class Vehicle:
 def main():
     import yaml
 
-    with open('setup.yaml', 'r') as f:
+    with open('../setup.yaml', 'r') as f:
         y = yaml.safe_load(f)
 
     modes = modes_from_dict(y['Modes'])
