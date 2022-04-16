@@ -30,14 +30,19 @@
     <script type="text/python">
         from browser import document, window
         from main import Vehicle
+        import yaml
 
-        vehicle = Vehicle()
+        with open('setup.yaml', 'r') as f:
+            y = yaml.safe_load(f)
+
+        modes = modes_from_dict(y['Modes'])
+        state = state_from_dict(y['State'])
+        stacks = y['Stacks']
+
+        vehicle = Vehicle(modes, state, stacks)
 
         def py_call(arg):
-            if arg == 'modes':
-                for mode in vehicle.modes:
-                    print(mode)
-            return 'Return value'
+            vehicle.__dump_json()
 
         window.py_call = py_call
     </script>

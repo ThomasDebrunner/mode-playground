@@ -3,13 +3,15 @@ import re
 import sys
 from modes import modes_from_dict
 from colors import bold, blue, red, yellow
-
+import json
 
 def eprint(content):
     print(red(content))
 
+
 def wprint(content):
     print(yellow(content))
+
 
 def main_loop(vehicle):
     should_exit = False
@@ -24,40 +26,31 @@ def main_loop(vehicle):
 
 def apply_command(vehicle, command):
     state_match = re.search('^state (.*)$', command)
-    set_match = re.search('^set (.*) (ok|fail)$', command)
+    set_match = re.search('^set (.*) (ok|fail|true|false)$', command)
     mode_match = re.search('^mode (.*)$', command)
 
     if command == 'state':
-        vehicle._state.print()
-    elif command == 'modes':
-        print('Available modes:')
-        for mode in vehicle._modes:
-            print('- ' + mode)
-    elif command == 'stacks':
-        print('Available stacks:')
-        for name, stack in vehicle._stacks.items():
-            print('> ' + bold(name))
-            for mode in stack:
-                print('  - ' + mode)
+        vehicle.print_state()
+
     elif state_match:
         query = state_match.group(1)
-        try:
-            vehicle._state[query].print()
-        except IndexError as err:
-            eprint(str(err))
+        vehicle.print_state(query)
+
+    elif command == 'modes':
+        vehicle.print_modes()
+
+    elif command == 'stacks':
+        vehicle.print_stacks()
+
     elif set_match:
         query = set_match.group(1)
-        value = False if set_match.group(2) == 'fail' else True
-        try:
-            vehicle.set_state(query, value)
-        except IndexError as err:
-            eprint(str(err))
+        value = False if set_match.group(2) == ('fail' or 'false') else True
+        vehicle.set_state(query, value)
+
     elif mode_match:
         mode = mode_match.group(1)
-        if mode in vehicle._modes:
-            vehicle.request_mode(mode)
-        else:
-            eprint('%s is not a valid mode' % mode)
+        vehicle.request_mode(mode)
+
     elif command == 's':
         vehicle.simulate()
     elif not command == '':
@@ -77,12 +70,42 @@ class Vehicle:
         self._sim_time = 0
         self._mode_request_reported = True
 
+    def _dump_json(self):
+        return json.dumps(self)
+
     def set_state(self, query, value):
-        self._state[query].set(value, self._sim_time)
+        try:
+            self._state[query].set(value, self._sim_time)
+        except IndexError as err:
+            eprint(str(err))
+
+    def print_state(self, query=None):
+        try:
+            if query is None:
+                self._state.print()
+            else:
+                self._state[query].print()
+        except IndexError as err:
+            eprint(str(err))
+
+    def print_modes(self):
+        print('Available modes:')
+        for mode in self._modes:
+            print('- ' + mode)
+
+    def print_stacks(self):
+        print('Available stacks:')
+        for name, stack in self._stacks.items():
+            print('> ' + bold(name))
+            for mode in stack:
+                print('  - ' + mode)
 
     def request_mode(self, mode):
-        self._user_selected_mode = self._modes[mode]
-        self._mode_request_reported = False
+        if mode in self._modes:
+            self._user_selected_mode = self._modes[mode]
+            self._mode_request_reported = False
+        else:
+            eprint('%s is not a valid mode' % mode)
 
     def print_mode_state(self):
         print(bold(blue('Sim time: %d, user selected mode [%s], vehicle executing [%s]' %
