@@ -32,8 +32,10 @@ class StateGroup:
         self._children = children if children is not None else []
 
     def __getitem__(self, query):
-        next_item = query
+        if query[0] == '/':
+            query = query[1:]
         remaining_query = ''
+        next_item = query
         if '/' in query:
             split = query.split('/')
             next_item = split[0]

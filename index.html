@@ -7,19 +7,29 @@
 
 </head>
 <body onload="brython()">
+    <h1>PX4 mode playground</h1>
     <div class="main-wrapper">
-        <h1>PX4 mode playground</h1>
-        <div class="console-row">
+        <div class="left-column">
             <div class="console">
                 <div id="console-out"></div>
                 <input type="text" id="console-in" placeholder=">> Command"/>
             </div>
-        </div>
-        <div class='mode-sim-row'>
+            <div class='sim'>
+                <h3>Sim control</h3>
+                <span id="sim-time"></span>
+                <button onclick='simStep()'>&#x02920; Sim 1s step</button>
+                <button onclick='simStart()'>&#x25B6; Sim start (auto)</button>
+                <button onclick='simStop()'>&#x23F8; Sim pause (auto)</button>
+            </div>
             <div class='modes'>
                 <h3>User mode selection</h3>
                 <div id='mode-target'></div>
             </div>
+        </div>
+        <div class='right-column'>
+            <ul id="state-target">
+
+            </ul>
         </div>
     </div>
 
@@ -55,8 +65,12 @@
         def py_dump_vehicle():
             return vehicle._dump_json()
 
+        def py_sim_advance(arg):
+            vehicle.simulate(arg)
+
         window.py_apply_command = py_apply_command
         window.py_dump_vehicle = py_dump_vehicle
+        window.py_sim_advance = py_sim_advance
 
         py_apply_command('nop')
     </script>
@@ -64,23 +78,106 @@
 
     <script type="text/javascript">
         let py_initialized = false
-        function onPythonReady() {
-            {   
-                const full_state = JSON.parse(window.py_dump_vehicle())
-                
-                // add mode buttons
-                const modes = full_state['_modes'];
-                const mode_target = document.getElementById('mode-target')
-                console.log(modes)
-                Object.keys(modes).forEach(m => {
-                    const btn = document.createElement('button')
-                    btn.innerHTML = m
-                    btn.onclick = e => {window.py_apply_command('mode ' + m)}
-                    mode_target.appendChild(btn)
-                })
+
+        function createStateItem(state, target, path) {
+            let item = document.createElement('li')
+            const this_path = path + '/' + state.name
+            if (state._children != undefined) {
+                item.innerHTML = `<span class='state-item-text'>${state.name}</span>`
+            } else {
+                item.innerHTML = `<span class='state-item-text'>${state.name}</span>
+                <button onclick="setState('${this_path}', true)" class='ok-btn'>&#8594; ok</button>
+                <button onclick="setState('${this_path}', false)" class='fail-btn'>&#8594; fail</button>`
+            }
+            item.id = 'state-' + this_path
+            item.classList.add('state-item')
+            item.classList.add('ok')
+            target.appendChild(item)
+            if (state._children != undefined) {
+                let ulItem = document.createElement('ul')
+                for (const [k, v] of Object.entries(state._children)) {
+                    createStateItem(v, ulItem, this_path)
+                }
+                target.appendChild(ulItem)
             }
         }
 
+        function onPythonReady() {
+            const full_state = JSON.parse(window.py_dump_vehicle())
+            
+            // render mode buttons
+            const modes = full_state['_modes'];
+            const mode_target = document.getElementById('mode-target')
+            Object.keys(modes).forEach(m => {
+                const btn = document.createElement('button')
+                btn.innerHTML = m
+                btn.onclick = e => {window.py_apply_command('mode ' + m)}
+                mode_target.appendChild(btn)
+            })
+            let state_target = document.getElementById('state-target')
+            for (const [k, v] of Object.entries(full_state['_state']._children)) {
+                createStateItem(v, state_target, '')
+            }
+            render()
+        }
+
+        function setState(query, value) {
+            window.py_apply_command(`set ${query} ${value}`)
+            render()
+        }
+
+        // --- sim ---
+
+        function renderStateUpdate(state, path) {
+            const this_path = path + '/' + state.name
+            let value = true
+            if (state._value != undefined) {
+                value = state._value
+            }
+            else if (state._children != undefined) {
+                for (const [k, v] of Object.entries(state._children)) {
+                    const nval = renderStateUpdate(v, this_path)
+                    console.log(`child ${this_path} ${v.name} yields ${nval}`)
+                    value = value && nval
+                }
+            }
+            let element = document.getElementById('state-' + this_path)
+            element.classList.remove('ok', 'fail')
+            value ? element.classList.add('ok') : element.classList.add('fail')
+            return value
+        }
+
+        function render() {
+            const full_state = JSON.parse(window.py_dump_vehicle())
+
+            const sim_time_label = document.getElementById("sim-time")
+            sim_time_label.innerHTML = "Time: " + full_state['_sim_time'].toFixed(1) + 's'
+            for (const [k, v] of Object.entries(full_state['_state']._children)) {
+                renderStateUpdate(v, '')
+            }
+        }
+
+        var interval = null;
+        function simStart() {
+            if (interval === null) {
+                interval = setInterval(() => {
+                    py_sim_advance(0.2)
+                    render()
+                }, 200)
+            }
+        }
+
+        function simStep() {
+            window.py_apply_command("s")
+            render()
+        }
+
+        function simStop() {
+            if (interval !== null) {
+                clearInterval(interval)
+                interval = null
+            }
+        }
 
         // --- console ---
         const console_in = document.getElementById("console-in")
@@ -89,6 +186,7 @@
             if(event.key === 'Enter') {
                 window.py_apply_command(console_in.value)
                 console_in.value = ''
+                render()
             }
         }
 
@@ -109,3 +207,17 @@
 
 </body>
 </html>
+
+<!--
+black: rgb(0, 0, 0)
+red: rgb(187, 0, 0)
+green: rgb(0, 187, 0)
+yellow: rgb(187, 187, 0)
+blue: rgb(0, 0, 187)
+magenta: rgb(187, 0, 187)
+cyan: rgb(0, 187, 187)
+white: rgb(255, 255, 255)
+
+
+
+-->

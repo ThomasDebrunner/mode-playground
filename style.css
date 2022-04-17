@@ -1,16 +1,93 @@
 body {
     font-family: Helvetica, Geneva, Tahoma, sans-serif;
     background: #222222;
-    color: #FFFFFF;
+    color: #A9B7C6;
 }
 
-.console-row {
+ul, li {
+    margin-left: 0;
+    padding-left: 0;
+}
+
+ul {
+    margin-left: 22px;
+}
+
+button {
+    background: #006fab;
+    color: #A9B7C6;
+    border: none;
+    font-size: 14;
+    border-radius: 1px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #117e9c;
+}
+
+.state-item {
+    display: flex;
+    flex-direction: row;
+    color: rgb(187, 0, 0);
+}
+
+.state-item:before {
+    content: "\2716";
+    display: inline-block;
+    margin-left: -1.3em;
+    width: 1.3em;
+}
+
+.state-item.ok {
+    color: rgb(0, 187, 0);
+}
+
+.state-item.ok > .ok-btn {
+    display:none;
+}
+
+.state-item.fail > .fail-btn {
+    display:none;
+}
+
+.state-item.ok:before {
+    content: "\2713";
+    display: inline-block;
+    margin-left: -1.3em;
+    width: 1.3em;
+  }
+
+.state-item-text {
+    width: 100%;
+    font-size: 12px;
+}
+
+.ok-btn {
+    width: 100px;
+    font-size: 11px;
+}
+
+.fail-btn {
+    width: 100px;
+    font-size: 11px;
+}
+
+.main-wrapper {
     display: flex;
     flex-direction: row;
 }
 
-.console {
+.left-column {
     width: 70%;
+}
+
+.right-colun {
+    width: 30%;
+}
+
+.console {
+    width: 100%;
     display: block;
 }
 
@@ -18,23 +95,37 @@ body {
     width: 100%;
     height: 60vh;
     resize: none;
-    background: #020202;
+    background: #2B2B2B;
     border: none;
     font-size: 16px;
-    color: #ffffff;
+    color: #A9B7C6;
     font-family: consolas, monospace;
     overflow: scroll;
 }
 
 #console-in {
     width: 100%;
-    background: #343434;
-    color: #FFFFFF;
+    background: #2B2B2B;
+    color: #A9B7C6;
     font-size: 16px;
     border: none;
     font-family: consolas, monospace;
 }
 
-textarea:focus, input:focus{
+textarea:focus, input:focus {
     outline: 0;
+}
+
+#state-target {
+    display: block;
+    width: 100%;
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: 15px;
+    margin-right: 15px;
+    padding-left: 35px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    padding-right: 12px;
+    background: #2B2B2B;
 }

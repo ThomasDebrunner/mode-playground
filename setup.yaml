@@ -1,9 +1,10 @@
 Modes:
     Idle:
-        can_run:
+        can_run: {}
+    
+        can_enter:
             System/Armed:
                 expect: false
-                fail_stack: Idle
 
     Takeoff:
         sim_duration: 10
@@ -12,7 +13,7 @@ Modes:
         can_run:
             Hardware:
                 expect: true
-                fail_stack: RTL
+                fail_stack: Return
             Estimator/GlobalPosition:
                 expect: true
                 fail_stack: Land
@@ -51,7 +52,7 @@ Modes:
         can_run:
             Hardware:
                 expect: true
-                fail_stack: RTL
+                fail_stack: Return
             Estimator/GlobalPosition:
                 expect: true
                 fail_stack: Land
@@ -60,7 +61,7 @@ Modes:
                 fail_stack: Terminate
             System/Battery:
                 expect: true
-                fail_stack: RTL
+                fail_stack: Return
                 hysteresis: 5
 
     RTL:
@@ -68,7 +69,7 @@ Modes:
         can_run:
             Hardware:
                 expect: true
-                fail_stack: RTL
+                fail_stack: Return
             Estimator/GlobalPosition:
                 expect: true
                 fail_stack: Land
@@ -76,11 +77,11 @@ Modes:
                 expect: true
                 fail_stack: Terminate
 
-    PositionControl:
+    PositionControlled:
         can_run:
             Hardware:
                 expect: true
-                fail_stack: RTL
+                fail_stack: Return
             Estimator/GlobalPosition:
                 expect: true
                 fail_stack: Manual
@@ -89,11 +90,11 @@ Modes:
                 fail_stack: Terminate
             System/ManualControl:
                 expect: true
-                fail_stack: RTL
+                fail_stack: Return
                 hysteresis: 10
             System/Battery:
                 expect: true
-                fail_stack: RTL
+                fail_stack: Return
                 hysteresis: 5
                 overridable: true
 
@@ -101,7 +102,7 @@ Modes:
         can_run:
             Hardware:
                 expect: true
-                fail_stack: RTL
+                fail_stack: Return
             Estimator/GlobalPosition/Z:
                 expect: true
                 fail_stack: Manual
@@ -110,11 +111,11 @@ Modes:
                 fail_stack: Terminate
             System/ManualControl:
                 expect: true
-                fail_stack: RTL
+                fail_stack: Return
                 hysteresis: 10
             System/Battery:
                 expect: true
-                fail_stack: RTL
+                fail_stack: Return
                 hysteresis: 5
                 overridable: true
 

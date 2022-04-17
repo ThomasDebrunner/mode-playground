@@ -43,7 +43,7 @@ def apply_command(vehicle, command):
 
     elif set_match:
         query = set_match.group(1)
-        value = False if set_match.group(2) == ('fail' or 'false') else True
+        value = False if (set_match.group(2) == 'fail' or  set_match.group(2) == 'false') else True
         vehicle.set_state(query, value)
 
     elif mode_match:
@@ -115,8 +115,8 @@ class Vehicle:
         if self._fail_safe_stack:
             print(bold(red('Fail safe stack active: %s' % self._fail_safe_stack)))
 
-    def simulate(self):
-        self._sim_time += 1
+    def simulate(self, step=1):
+        self._sim_time += step
 
         # Check if the user requested mode can be respected
         if self._user_selected_mode != self._executing_mode:
@@ -125,15 +125,17 @@ class Vehicle:
 
             if not res.can_run:
                 if not self._mode_request_reported:
-                    eprint('Can not switch to mode %s. Will switch as soon as conditions allow' % self._user_selected_mode.name)
-                    eprint('Reasons:')
+                    wprint('Can not switch to mode %s. Will switch as soon as conditions allow' % self._user_selected_mode.name)
+                    wprint('Reasons:')
                     for reason in res.reasons:
-                        eprint(' - ' + reason)
+                        wprint(' - ' + reason)
                     self._mode_request_reported = True
             else:
                 self._executing_mode = self._user_selected_mode
                 self._fail_safe_stack = None
+                self._mode_request_reported = True
                 print('Switched to mode %s' % self._user_selected_mode.name)
+                self.print_mode_state()
 
         # Check if currently active mode can still run
         res = self._executing_mode.can_run(self._state, self._sim_time)
@@ -145,13 +147,29 @@ class Vehicle:
                 eprint(' - ' + reason)
 
             self._fail_safe_stack = res.fail_stack
+
+            if not self._fail_safe_stack in self._stacks:
+                eprint('EMERGENCY: Fail safe stack %s does not exist.')
+                eprint("This will be caught at mode register time. Giving up sim...")
+                exit(1)
+
+            success = False
             for mode in self._stacks[self._fail_safe_stack]:
                 wprint('Attempting %s mode' % mode)
+                if not mode in self._modes:
+                    eprint('Mode %s does not exist!' % mode)
+                    continue
                 res = self._modes[mode].can_run(self._state, self._sim_time)
                 if res.can_run:
                     wprint('Using %s mode as fail safe' % mode)
                     self._executing_mode = self._modes[mode]
+                    success = True
+                    self.print_mode_state()
                     break
+            if not success:
+                eprint('EMERGENCY: Fail safe stack %s did not have any modes that still work' % self._fail_safe_stack)
+                eprint("This will be caught at mode register time. Giving up sim...")
+                exit(1)
 
         else:
             if len(res.reasons) > 0:
